@@ -14,10 +14,10 @@ dry.thresh <- 50
 # getwd()
 
 # Activity file to read in
-file.in <- "data_example.act"
+file.in <- "GLS12018_2011_06_19_AAK969_000.act"
 
 # Name of file to output (should be csv)
-file.out <- "data_example_daily_summary.csv"
+file.out <- "GLS12018_2011_06_19_AAK969_000_daily_summary.csv"
 
 
 #*********************************************************************
@@ -31,8 +31,19 @@ file.out <- "data_example_daily_summary.csv"
 headers = c("fix_type","dd_mm_yy","mid_value","activity")     
 
 
-data1 <- read.table(file.in, header = F, sep = ",", col.names = headers)
+# some files have different numbers of columns - assuming the first 4 columns is the same then the following should work in all cases
+# based on code from http://stackoverflow.com/questions/1874443/import-data-into-r-with-an-unknown-number-of-columns
 
+no_col <- max(count.fields(file(file.in), sep = ","))
+data1 <- read.table(file.in, sep = ",", fill = TRUE, col.names=1:no_col)
+
+names(data1) <- headers
+
+# data1 <- read.table(file.in, header = F, sep = ",", col.names = headers,
+#                     fill = TRUE)
+# ?read.table
+
+# data1[2000,]
 
 # Get number of days represented in file
 days <- max(floor(data1$mid_value))- min(floor(data1$mid_value))
@@ -96,7 +107,7 @@ activity.type[data1$activity > wet.thresh] <- 2
 event <- NULL
 v <- 0
 event[1] <- 0
-i <- 2
+# i <- 2
 for(i in 2:m){
   if(activity.type[i] == activity.type[i-1]){
   event[i] <- v}
@@ -122,20 +133,24 @@ for(i in 1:m2){
 
 #4th pass, make daily summary table
 day.dry.number <- day.wet.number  <- day.mix.number  <- day.max.wet    <- day.max.dry    <- day.min.wet   <- day.min.dry   <- day.date   <- day.number     <- day.med.dry    <- day.med.wet    <- day.mean.dry   <- day.mean.wet   <- day.time       <- NULL
+# days <- 435
+# days <- floor(max(event.date_time) - min(event.date_time))
 
-days <- max(event.date) - min(event.date)
+# start.date <- floor(min(event.date_time))
+start.date <- floor(min(data1$mid_value))
 
-start.date <- min(event.date)
+# floor(max(data1$mid_value)) -start.date
+
 day.date <- NULL
 z <- start.date
 
 for(i in 1:days){
-  day.number[i] <-     i
+  day.number[i] <- i
   x <- event.date == z
   wet <- (event.date == z) & (event.type == 2)
   dry <- (event.date == z) & (event.type == 0)
-  (event.date == z) & (event.type == 1)
-  event.type[event.date == z]
+#   (event.date == z) & (event.type == 1)
+#   event.type[event.date == z]
 
 #   summary(as.factor(event.type))
   
@@ -144,6 +159,9 @@ for(i in 1:days){
 #   length(x == 1)
 #   sum((x == 1), na.rm=TRUE)
   
+# data1[1,]
+# data1[62622,]
+
   day.dry.number[i] <- sum((event.type[x] == 0), na.rm=TRUE)
   day.wet.number[i] <- sum((event.type[x] == 2), na.rm=TRUE)
   day.mix.number[i] <- sum((event.type[x] == 1), na.rm=TRUE)  
@@ -174,9 +192,12 @@ for(i in 1:days){
 
 
 
+# 
+# real <- c(1:length(day.number))
+# daily.summary <- as.data.frame(cbind(day.number[real], day.dry.number[real],  day.wet.number[real], day.mix.number[real],  day.max.wet[real], day.min.wet[real], day.max.dry[real], day.min.dry[real], day.mean.dry[real], day.med.dry[real], day.mean.wet[real], day.med.wet[real], day.date[real], median.value[real],mean.value[real],median.value.between[real],n.dry[real], n.wet[real], n.mix[real], day.prop.wet[real], mean.value.day[real], mean.value.night[real], as.character( as.POSIXct(day.date[real]*24*60*60,origin="1900-01-01", tz="UTC"))))
 
-real <- c(1:length(day.number))
-daily.summary <- as.data.frame(cbind(day.number[real], day.dry.number[real],  day.wet.number[real], day.mix.number[real],  day.max.wet[real], day.min.wet[real], day.max.dry[real], day.min.dry[real], day.mean.dry[real], day.med.dry[real], day.mean.wet[real], day.med.wet[real], day.date[real], median.value[real],mean.value[real],median.value.between[real],n.dry[real], n.wet[real], n.mix[real], day.prop.wet[real], mean.value.day[real], mean.value.night[real], as.character( as.POSIXct(day.date[real]*24*60*60,origin="1900-01-01", tz="UTC"))))
+# real <- c(1:length(day.number))
+daily.summary <- as.data.frame(cbind(day.number, day.dry.number,  day.wet.number, day.mix.number,  day.max.wet, day.min.wet, day.max.dry, day.min.dry, day.mean.dry, day.med.dry, day.mean.wet, day.med.wet, day.date, median.value,mean.value,median.value.between,n.dry, n.wet, n.mix, day.prop.wet, mean.value.day, mean.value.night, as.character( as.POSIXct(day.date*24*60*60,origin="1900-01-01", tz="UTC"))))
 
 
 header.names <- c("day.number", "day.dry.number",  "day.wet.number", "day.mix.number",  "day.max.wet", "day.min.wet", "day.max.dry", "day.min.dry", "day.mean.dry", "day.med.dry", "day.mean.wet", "day.med.wet", "day.date", "median.value","mean.value","median.value.between","n.dry", "n.wet", "n.mix", "day.prop.wet", "mean.value.day", "mean.value.night", "date")
