@@ -1,6 +1,6 @@
 
 # Enter name of file to produce figure from
-file.in <- "data_example_daily_summary.csv"
+file.in <- "GLS12018_2011_06_19_AAK969_000_daily_summary.csv"
 
 # ***************************************
 # Run below code to produce figure of daily activity budget accross year
@@ -43,7 +43,8 @@ ar_lev <- levels(x.long$Activity)
 ar_lev <- ar_lev[c(1,3,2)]
 x.long$Activity <- factor(x.long$Activity, levels = ar_lev)
 
-
+# ?pdf
+# pdf("GLS12018_2011_06_19_AAK969_000_daily_summary.pdf")
 
 ggplot(x.long, aes(dates, Percent, group = Activity)) +
   geom_bar(stat = "identity", aes(fill = Activity, order = Activity), position = "fill")  +
@@ -64,7 +65,7 @@ ggplot(x.long, aes(dates, Percent, group = Activity)) +
         legend.text = element_text(size = 10),
         legend.title = element_text(size = 10, face = "bold")) 
 
-
+# dev.off()
 
 # Plot some more figures ------
 
@@ -83,6 +84,9 @@ lines(loess.smooth(as.numeric(day.date), wet.max.time.hour , span=.1),
 # Plot duration of longest dry events
 dry.max.time.hour <- day.dat$day.max.dry*600/60/60
 plot(dry.max.time.hour~day.date)
+# Add date labels
+axis.Date(side = 1, at = seq(min(day.date), max(day.date), by = "month"), format = "%Y-%m-%d", las = 2)
+# ?axis.Date
 lines(loess.smooth(as.numeric(day.date), dry.max.time.hour , span=.1),
       lwd = 2, col = "red")
 
