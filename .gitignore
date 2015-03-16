@@ -9,3 +9,6 @@
 .Rproj.user
 data_example_daily_summary.csv
 ~$data_example_daily_summary_meta_data.xlsx
+*.act
+*.csv
+*.pdf
