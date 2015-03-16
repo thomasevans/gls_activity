@@ -2,6 +2,15 @@
 # summary will be output here too)
 setwd("F:/Documents/Work/GLS_DATA/Guillemots/2010/gl12013")
 
+# Thresholds
+# wet
+wet.thresh <- 150
+
+# dry
+dry.thresh <- 50
+
+
+
 # getwd()
 
 # Activity file to read in
@@ -50,9 +59,11 @@ time <- data1$mid_value - floor(data1$mid_value)
 # for each day, count number of dry and wet blocks
 for (i in 1:days){
   x <- (day == i )
-  y <- (day == i) & (data1$activity > 150)
-  z <- (day == i) & (data1$activity < 50)
-   nighttime <- x & ((time < 1/24 )| (time >23/24))
+  y <- (day == i) & (data1$activity > wet.thresh)
+  z <- (day == i) & (data1$activity < dry.thresh)
+  w <- (day == i) & (data1$activity >= dry.thresh  &  data1$activity <= wet.thresh)
+  
+  nighttime <- x & ((time < 1/24 )| (time >23/24))
   #summary(nighttime)
   daytime <- x & time > 11/24 & time <  13/24
 #   summary(daytime)
@@ -62,7 +73,7 @@ for (i in 1:days){
   median.value.between[i]  <- median(data1$activity[x & (data1$activity != 0) & (data1$activity != 200)]  )
   n.dry[i] <-  length(data1$fix_type[z])
   n.wet[i] <-  length(data1$fix_type[y])
-  n.mix[i] <-  length(data1$fix_type[!z & !y])
+  n.mix[i] <-  length(data1$fix_type[w])
   day.n[i] <-    floor(data1$mid_value[x][1])
   day.prop.wet[i] <- (sum(data1$activity[x])) /28800
   mean.value.day[i] <-  mean(data1$activity[daytime])
@@ -73,12 +84,12 @@ for (i in 1:days){
 
 #counting consecutive dry/ wet blocks
 
-#1st pass, label each block, as wet (>150) 2, mix (50 - 150) 1, dry (<50) 0
+#1st pass, label each block, as wet (>wet.thresh) 2, mix (dry.thresh - wet.thresh) 1, dry (<dry.thresh) 0
 m <- length(data1$activity)
 
 activity.type <- rep(1, m)
-activity.type[data1$activity < 50] <- 0
-activity.type[data1$activity > 150] <- 2
+activity.type[data1$activity < dry.thresh] <- 0
+activity.type[data1$activity > wet.thresh] <- 2
 
   
 #2nd pass, number consecutive contiguous activity type blocks the same
@@ -168,7 +179,7 @@ real <- c(1:length(day.number))
 daily.summary <- as.data.frame(cbind(day.number[real], day.dry.number[real],  day.wet.number[real], day.mix.number[real],  day.max.wet[real], day.min.wet[real], day.max.dry[real], day.min.dry[real], day.mean.dry[real], day.med.dry[real], day.mean.wet[real], day.med.wet[real], day.date[real], median.value[real],mean.value[real],median.value.between[real],n.dry[real], n.wet[real], n.mix[real], day.prop.wet[real], mean.value.day[real], mean.value.night[real], as.character( as.POSIXct(day.date[real]*24*60*60,origin="1900-01-01", tz="UTC"))))
 
 
-header.names <- c("day.number", "day.dry.number",  "day.wet.number", "day.mix.number",  "day.max.wet", "day.min.wet", "day.max.dry", "day.min.dry", "day.mean.dry", "day.med.dry", "day.mean.wet", "day.med.wet", "day.date", "median.value","mean.value","median.value.between","n.dry", "n.wet", "n.wet", "day.prop.wet", "mean.value.day", "mean.value.night", "date")
+header.names <- c("day.number", "day.dry.number",  "day.wet.number", "day.mix.number",  "day.max.wet", "day.min.wet", "day.max.dry", "day.min.dry", "day.mean.dry", "day.med.dry", "day.mean.wet", "day.med.wet", "day.date", "median.value","mean.value","median.value.between","n.dry", "n.wet", "n.mix", "day.prop.wet", "mean.value.day", "mean.value.night", "date")
 
 names(daily.summary) <- header.names
 
