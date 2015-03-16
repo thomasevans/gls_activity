@@ -1,12 +1,11 @@
 # History files
 .Rhistory
-
 # Example code in package build process
 *-Ex.R
-
 # R data files from past sessions
 .Rdata
-
 # RStudio files
 .Rproj.user/
 .Rproj.user
+data_example_daily_summary.csv
+~$data_example_daily_summary_meta_data.xlsx
