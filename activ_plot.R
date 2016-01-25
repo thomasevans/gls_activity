@@ -1,6 +1,8 @@
 # Source this file for 'activ.plot' function
 
 activ.plot <- function(act_file = "GLS12018_2011_06_19_AAK969_000.act",
+                       trn_file = "gls10049_20120625_000_thresh_10.trn",
+                       trn_true = TRUE,
                        col.wet = "#56B1F7", col.dry = "#132B43",
                        time_zone = "UTC", long = 18.0, lat = 57.25){
   
@@ -19,21 +21,23 @@ activ.plot <- function(act_file = "GLS12018_2011_06_19_AAK969_000.act",
   d <-read.csv(act_file, header = FALSE, sep = ",")
   names(d) <- c("x","date_time","date_time_excel","activity")
   
-  # For debugging
-  # str(d)
-  
-  # Fix date_time format and make sepperate date and time objects
+    # Fix date_time format and make sepperate date and time objects
   d$date_time <- as.POSIXct(strptime(as.character(d$date_time), format = "%d/%m/%y %H:%M:%S"), tz = "UTC")
-  d$date_time <- as.POSIXct(d$date_time, tz = time_zone)
-  d$date <- as.Date(d$date_time)
-  d$time_only <- strftime(d$date_time, format="%H:%M:%S")
-  d$time <- as.POSIXct(d$time_only, format="%H:%M:%S")
+  # d$date_time <- as.POSIXct(d$date_time, tz = time_zone)
+  d$date <- as.Date(d$date_time, tz = time_zone)
+  d$time_only <- strftime(d$date_time, format="%H:%M:%S", tz = time_zone)
+  d$time <- as.POSIXct(d$time_only, format="%H:%M:%S", tz = time_zone)
   
-  # Fix date range (in case there are partial days at the start and end)
+    # Fix date range (in case there are partial days at the start and end)
   date.range <- range(d$date, na.rm = TRUE)
   dates.in.file <- unique(d$date)
   # summary((d$date > date.range[1]  & d$date < date.range[2]))
+  # Remove first and final day (then hopefully middle days are complete)
   d.new <- d[(d$date > date.range[1]  & d$date < date.range[2]),]
+  
+  
+#   as.Date(d$date_time[1:100], tz = "EST")
+#   as.Date(d$date_time[1:100], tz = "UTC")
   
   
   # ?as.POSIXct
@@ -43,26 +47,33 @@ activ.plot <- function(act_file = "GLS12018_2011_06_19_AAK969_000.act",
     trn <-read.csv(trn_file, header = FALSE, sep = ",")
     names(trn) <- c("date_time","type","x")
     trn$date_time <- as.POSIXct(strptime(as.character(trn$date_time), format = "%d/%m/%y %H:%M:%S"), tz = "UTC")
-    trn$date_time <- as.POSIXct(trn$date_time, tz = time_zone)
     sunrises <- trn$date_time[trn$type == "Sunrise"]
     sunsets <- trn$date_time[trn$type == "Sunset"]
     
-    as.POSIXlt(sunrises, format = "%H:%M", tz = "UTC")
     sunrise.dates <- as.Date(sunrises, tz = time_zone)
     sunrise.times <- strftime(sunrises, format="%H:%M:%S", tz = time_zone)
     sunrise.new <- cbind.data.frame(sunrise.dates, sunrise.times)
       
+    sunset.dates <- as.Date(sunsets, tz = time_zone)
+    sunset.times <- strftime(sunsets, format="%H:%M:%S", tz = time_zone)
+    sunset.new <- cbind.data.frame(sunset.dates, sunset.times)
     
-    d$date <- as.Date(d$date_time)
     names(sunrise.new) <- c("date", "sunrise_time")
-
+    names(sunset.new) <- c("date", "sunset_time")
+    
+    suntimes <- merge(sunrise.new, sunset.new, by = "date", all= FALSE)
+    
+    # suntimes$date %in% d.new$date
     
     # ?merge
-    d.new.test <- merge(d.new, sunrise.new, by = "date", all.x = TRUE, all.y = FALSE)
+    d.new.test <- merge(d.new, suntimes, by = "date", all.x = TRUE, all.y = FALSE)
     
     d.new.test$sunrise_time <- as.POSIXct(as.character(d.new.test$sunrise_time), format="%H:%M:%S", tz = time_zone)
+    d.new.test$sunset_time <- as.POSIXct(as.character(d.new.test$sunset_time), format="%H:%M:%S", tz = time_zone)
     
     d.new <- d.new.test
+    
+
     
     
   }else {
@@ -111,28 +122,29 @@ activ.plot <- function(act_file = "GLS12018_2011_06_19_AAK969_000.act",
   
   P <- ggplot(data = d.new, aes(x = date, y = as.POSIXlt(ten_t, format = "%H:%M"), fill = activity)) +
     geom_tile()
-  
+  # dev.off()
   P <- P + scale_fill_gradient(high = col.wet, low = col.dry)
   P <- P + xlab("Date") + ylab("Time")
   P <- P + scale_y_datetime(breaks = date_breaks("2 hour"),
                         labels = date_format("%H:%M"))
   
-  # Add sunrise and sunset lines
-  P <- P + geom_line(
-    aes(x = date, y = sunrise), size = 2, colour = "green", alpha = 0.5) #Add line for sun rise
-  P <- P + geom_line(
-    aes(x = date, y = sunset), size = 2, colour = "red", alpha = 0.5) #Add line for sun rise
   
-  
-  P <- P + geom_point(aes(data = sunrise.new, x = sunrise.dates,
-                          y = as.POSIXlt(sunrise.times, format = "%H:%M"), size = 2), colour = "red") #Adds a distribution and level of temperature data
-  
-  
-  
-  P <- P + geom_point(
-    aes(data = sunrise.new, x = sunrise.dates, y = as.POSIXlt(sunrise.times, format = "%H:%M")), size = 2, colour = "green", alpha = 0.5) #Add line for sun rise
-  P <- P + geom_line(
-    aes(x = date, y = sunrise_time), size = 2, colour = "red", alpha = 0.5) #Add line for sun rise
+  if(trn_true){
+    
+    P <- P + geom_line(
+      aes(x = date, y = as.POSIXlt(sunrise_time, format = "%H:%M") ), size = 2, colour = "green", alpha = 0.5) #Add line for sun rise
+    
+    P <- P + geom_line(
+      aes(x = date, y = as.POSIXlt(sunset_time, format = "%H:%M")), size = 2, colour = "red", alpha = 0.5) #Add line for sun rise
+  } else {
+      # Add sunrise and sunset lines
+      P <- P + geom_line(
+        aes(x = date, y = sunrise), size = 2, colour = "green", alpha = 0.5) #Add line for sun rise
+      P <- P + geom_line(
+        aes(x = date, y = sunset), size = 2, colour = "red", alpha = 0.5) #Add line for sun rise
+      
+  }
+
   
   
   
