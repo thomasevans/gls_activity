@@ -13,7 +13,7 @@ source("activ_plot.R")
 activ.plot(act_file = "gls10049_20120625_000.act",
            trn_file = "gls10049_20120625_000_thresh_10.trn",
            trn_true = TRUE,
-           col.wet = "#56B1F7", col.dry = "#132B43",
+           col.wet = "black", col.dry = "white",
            time_zone = "UTC", long = 18.0, lat = 57.25)
 
 # Notes
