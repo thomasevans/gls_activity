@@ -15,7 +15,7 @@ activ.plot <- function(act_file = "GLS12018_2011_06_19_AAK969_000.act",
   require("ggplot2")
   require("scales")
   require("maptools")
-  # require("lubridate")
+  require("lubridate")
   
   # Load specified activity file
   d <-read.csv(act_file, header = FALSE, sep = ",")
@@ -68,18 +68,31 @@ activ.plot <- function(act_file = "GLS12018_2011_06_19_AAK969_000.act",
 
     
   }else {
+    # summary(is.na(d.new$date_time))
     # Add code to get sunrise/sunset times for specified location (e.g. colony)
     coord <- matrix(c(long, lat), nrow = 1)
-    sunrise <- sunriset(coord, d.new$date_time, direction = "sunrise",
+    
+    sunrise <- sunset <- rep(NA,length(d.new$date_time))
+    sunrise <- as.POSIXct(sunrise)
+    sunset <- as.POSIXct(sunset)
+    
+    date_time_ok <- !is.na(d.new$date_time)
+    sunrise[date_time_ok] <- sunriset(coord, d.new$date_time[date_time_ok], direction = "sunrise",
                         POSIXct.out = TRUE)[,2]
-    sunset <- sunriset(coord, d.new$date_time, direction = "sunset",
+    sunset[date_time_ok] <- sunriset(coord, d.new$date_time[date_time_ok], direction = "sunset",
                        POSIXct.out = TRUE)[,2]
+    attr(sunrise, "tzone") <- "UTC"
+    attr(sunset, "tzone") <- "UTC"
+    
     d.new <- cbind.data.frame(d.new, sunrise, sunset)
     # names(sunriseset) <- c("date", "rise", "set")
     d.new$sunrise <- format(d.new$sunrise, format = "%H:%M:%S")
-    d.new$sunrise <- as.POSIXct(d.new$sunrise, format = "%H:%M:%S")
+    d.new$sunrise <- as.POSIXct(d.new$sunrise, format = "%H:%M:%S", tz = time_zone)
     d.new$sunset <- format(d.new$sunset, format = "%H:%M:%S")
-    d.new$sunset <- as.POSIXct(d.new$sunset, format = "%H:%M:%S")
+    d.new$sunset <- as.POSIXct(d.new$sunset, format = "%H:%M:%S", tz = time_zone)
+    
+    force_tz(d.new$sunset, tzone = "UTC")
+    force_tz(d.new$sunrise, tzone = "UTC")
     
   }
   
@@ -91,9 +104,12 @@ activ.plot <- function(act_file = "GLS12018_2011_06_19_AAK969_000.act",
   
   time_only_ten <- strftime(d.new$ten, format="%H:%M:%S")
   d.new$ten_t <- as.POSIXct(time_only_ten, format="%H:%M:%S", tz = "UTC")
-
-  d.new$sunset_time <- update(d.new$sunset_time, tz = "UTC")
-  d.new$sunrise_time <- update(d.new$sunrise_time, tz = "UTC")
+# ?force_tz()
+  
+  if(trn_true){
+    force_tz(d.new$sunset_time, tzone = "UTC")
+    force_tz(d.new$sunrise_time, tzone = "UTC")
+  }
   
   P <- ggplot(data = d.new, aes(x = date, y = as.POSIXlt(ten_t, format = "%H:%M"), fill = activity)) +
     geom_tile()
@@ -119,9 +135,9 @@ activ.plot <- function(act_file = "GLS12018_2011_06_19_AAK969_000.act",
   } else {
       # Add sunrise and sunset lines
       P <- P + geom_point(
-        aes(x = date, y = sunrise), size = 2, colour = "dark green", alpha = 0.5) #Add line for sun rise
+        aes(x = date, y = as.POSIXlt(sunrise)), size = 2, colour = "dark green", alpha = 0.5) #Add line for sun rise
       P <- P + geom_point(
-        aes(x = date, y = sunset), size = 2, colour = "red", alpha = 0.5) #Add line for sun rise
+        aes(x = date, y = as.POSIXlt(sunset)), size = 2, colour = "red", alpha = 0.5) #Add line for sun rise
       
   }
 
