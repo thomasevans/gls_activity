@@ -7,14 +7,14 @@ install.packages(c("ggplot2", "maptools", "scales"))
 setwd("")
 
 # Source the function 'activ.plot'
-source("activ_plot2.R")
+source("activ_plot2_broken.R")
 
 # Run plot function
 activ.plot(act_file = "gls10049_20120625_000.act",
            trn_file = "gls10049_20120625_000_thresh_10.trn",
            trn_true = TRUE,
            col.wet = "black", col.dry = "white",
-           time_zone = "EST", long = 18.0, lat = 57.25)
+           time_zone = "UTC", long = 18.0, lat = 57.25)
 
 # Notes
 # act_file - specify the file name
