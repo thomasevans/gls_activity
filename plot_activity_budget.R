@@ -1,6 +1,6 @@
 
 # Enter name of file to produce figure from
-file.in <- "GLS12018_2011_06_19_AAK969_000_daily_summary.csv"
+file.in <- "gls10049_20120625_000_daily_summary.csv"
 
 # ***************************************
 # Run below code to produce figure of daily activity budget accross year
@@ -45,7 +45,7 @@ x.long$Activity <- factor(x.long$Activity, levels = ar_lev)
 
 # ?pdf
 # pdf("GLS12018_2011_06_19_AAK969_000_daily_summary.pdf")
-
+png("gls10049_activity_summary.png", width = 8, height = 5, units = "in", res = 300)
 ggplot(x.long, aes(dates, Percent, group = Activity)) +
   geom_bar(stat = "identity", aes(fill = Activity, order = Activity), position = "fill")  +
   scale_fill_manual(values = rev(brewer.pal(3, "Pastel1")),
@@ -65,7 +65,7 @@ ggplot(x.long, aes(dates, Percent, group = Activity)) +
         legend.text = element_text(size = 10),
         legend.title = element_text(size = 10, face = "bold")) 
 
-# dev.off()
+dev.off()
 
 # Plot some more figures ------
 
