@@ -1,6 +1,6 @@
 # Set working directory where your files are located (new daily
 # summary will be output here too)
-setwd("F:/Documents/Work/GLS_DATA/Guillemots/2010/gl12013")
+# setwd("F:/Documents/Work/GLS_DATA/Guillemots/2010/gl12013")
 
 # Thresholds
 # wet
@@ -14,10 +14,10 @@ dry.thresh <- 50
 # getwd()
 
 # Activity file to read in
-file.in <- "GLS12018_2011_06_19_AAK969_000.act"
+file.in <- "gls10049_20120625_000.act"
 
 # Name of file to output (should be csv)
-file.out <- "GLS12018_2011_06_19_AAK969_000_daily_summary.csv"
+file.out <- "gls10049_20120625_000_daily_summary.csv"
 
 
 #*********************************************************************
