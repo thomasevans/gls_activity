@@ -131,11 +131,11 @@ activ.plot <- function(act_file = "GLS12018_2011_06_19_AAK969_000.act",
   
   if(trn_true){
     
-    P <- P + geom_line(
-      aes(x = date, y = as.POSIXlt(sunrise_time, format = "%H:%M") ), size = 2, colour = "green", alpha = 0.5) #Add line for sun rise
+    P <- P + geom_point(
+      aes(x = date, y = as.POSIXlt(sunrise_time, format = "%H:%M") ), size = 0.7, colour = "green", alpha = 0.4) #Add line for sun rise
     
-    P <- P + geom_line(
-      aes(x = date, y = as.POSIXlt(sunset_time, format = "%H:%M")), size = 2, colour = "red", alpha = 0.5) #Add line for sun rise
+    P <- P + geom_point(
+      aes(x = date, y = as.POSIXlt(sunset_time, format = "%H:%M")), size = 0.7, colour = "red", alpha = 0.4) #Add line for sun rise
   } else {
       # Add sunrise and sunset lines
       P <- P + geom_line(
@@ -145,7 +145,7 @@ activ.plot <- function(act_file = "GLS12018_2011_06_19_AAK969_000.act",
       
   }
 
-  
+  ?geom_point
   
   
   print(P)
