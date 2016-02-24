@@ -10,12 +10,14 @@ setwd("")
 source("activ_plot.R")
 
 # Run plot function
+# ?png
+png("gls10049_activity.png", width = 8, height = 5, units = "in", res = 300)
 activ.plot(act_file = "gls10049_20120625_000.act",
            trn_file = "gls10049_20120625_000_thresh_10.trn",
            trn_true = TRUE,
            col.wet = "black", col.dry = "white",
            time_zone = "UTC", long = 18.0, lat = 57.25)
-
+dev.off()
 # Notes
 # act_file - specify the file name
 # trn_file - transition file (sunrise/ sunset times)
